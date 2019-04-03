@@ -87,7 +87,6 @@ class GildedRose
       normal_high_handler
     else
       remove_days(1)
-      @quality = 0
     end
   end
 
