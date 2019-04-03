@@ -1,5 +1,5 @@
 class GildedRose
-  attr_reader :name, :days_remaining, :quality
+  attr_accessor :name, :days_remaining, :quality
 
   def initialize(name:, days_remaining:, quality:)
     @name = name
@@ -7,49 +7,89 @@ class GildedRose
     @quality = quality
   end
 
-  def tick
-    if @name != "Aged Brie" and @name != "Backstage passes to a TAFKAL80ETC concert"
-      if @quality > 0
-        if @name != "Sulfuras, Hand of Ragnaros"
-          @quality = @quality - 1
-        end
-      end
-    else
-      if @quality < 50
-        @quality = @quality + 1
-        if @name == "Backstage passes to a TAFKAL80ETC concert"
-          if @days_remaining < 11
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-          if @days_remaining < 6
-            if @quality < 50
-              @quality = @quality + 1
-            end
-          end
-        end
-      end
-    end
-    if @name != "Sulfuras, Hand of Ragnaros"
-      @days_remaining = @days_remaining - 1
-    end
-    if @days_remaining < 0
-      if @name != "Aged Brie"
-        if @name != "Backstage passes to a TAFKAL80ETC concert"
-          if @quality > 0
-            if @name != "Sulfuras, Hand of Ragnaros"
-              @quality = @quality - 1
-            end
-          end
-        else
-          @quality = @quality - @quality
-        end
+  def improve_quality(amt)
+    @quality += amt
+  end
+
+  def diminish_quality(amt)
+    @quality -= amt
+  end
+
+  def remove_days(amt)
+    @days_remaining -= amt
+  end
+
+  def ticket_handler
+    if @quality < 50
+      if @days_remaining == 11
+          improve_quality(1)
+      elsif @days_remaining > 5
+          improve_quality(2)
+      elsif @days_remaining == 5
+          improve_quality(3)
+      elsif @days_remaining == 1
+          improve_quality(3)
       else
-        if @quality < 50
-          @quality = @quality + 1
-        end
+        diminish_quality(@quality)
       end
+    end
+    remove_days(1)
+  end
+
+  def brie_handler
+    if @quality < 50
+      if @days_remaining > 0 && @quality <= 10
+        improve_quality(1)
+      elsif @days_remaining == 0 && @quality >= 40
+        improve_quality(1)
+      elsif @days_remaining == 0 && @quality <= 10
+        improve_quality(2)
+      elsif @days_remaining < 0 && @quality <= 10
+        improve_quality(2)
+      end
+    end
+    remove_days(1)
+  end
+
+  def ragnaros_maintainer
+    @days_remaining = @days_remaining
+    @quality = @quality
+  end
+
+  def mana_cake_handler
+    if @days_remaining <= 0 && (@quality <= 10 && @quality > 0)
+      diminish_quality(4)
+    elsif @days_remaining > 0 && @quality > 0
+      diminish_quality(2)
+    end
+      remove_days(1)
+  end
+
+  def normal_high_handler
+    if @days_remaining > 0
+      diminish_quality(1)
+    elsif @days_remaining <= 0
+      diminish_quality(2)
+    end
+    remove_days(1)
+  end
+
+  def tick
+    if @name == "Backstage passes to a TAFKAL80ETC concert"
+      ticket_handler
+    elsif @name == 'Aged Brie'
+      brie_handler
+    elsif @name == "Sulfuras, Hand of Ragnaros"
+      ragnaros_maintainer
+    elsif @name == "Conjured Mana Cake"
+      mana_cake_handler
+    elsif @quality >= 10
+      normal_high_handler
+    else
+      remove_days(1)
+      @quality = 0
     end
   end
+
+
 end
